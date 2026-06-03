@@ -1,0 +1,10 @@
+{
+  "name": "meiye-ai-assistant",
+  "version": "0.2.0",
+  "private": true,
+  "description": "美业 AI 运营助手本地 MVP",
+  "scripts": {
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check app.js && node scripts/smoke-test.js"
+  }
+}

@@ -1,0 +1,618 @@
+{
+  "store": {
+    "id": "store_qiguang",
+    "name": "栖光美甲美睫 · 轻医美",
+    "plan": "专业版试用",
+    "generationQuota": 500,
+    "generationUsed": 90,
+    "subscription": {
+      "planId": "trial_pro",
+      "planName": "专业版试用",
+      "billingMode": "trial",
+      "priceMonthly": 0,
+      "employeeLimit": 10,
+      "quotaMonthly": 500,
+      "currentPeriod": "2026-06",
+      "renewsAt": "2026-06-30",
+      "status": "active"
+    }
+  },
+  "users": {
+    "boss": {
+      "id": "boss",
+      "name": "许老板",
+      "role": "boss",
+      "title": "门店老板"
+    },
+    "chen": {
+      "id": "chen",
+      "name": "陈妍",
+      "role": "employee",
+      "title": "美甲师"
+    },
+    "lin": {
+      "id": "lin",
+      "name": "林夏",
+      "role": "employee",
+      "title": "美睫师"
+    },
+    "zhou": {
+      "id": "zhou",
+      "name": "周可",
+      "role": "employee",
+      "title": "皮肤管理师"
+    },
+    "wu": {
+      "id": "wu",
+      "name": "吴晴",
+      "role": "employee",
+      "title": "前台运营"
+    }
+  },
+  "employees": {
+    "chen": {
+      "id": "chen",
+      "name": "陈妍",
+      "role": "美甲师",
+      "focus": "美甲案例与显白款式",
+      "tasks": {
+        "xhs": 2,
+        "douyin": 1,
+        "moments": 1
+      },
+      "done": {
+        "xhs": 1,
+        "douyin": 1,
+        "moments": 0
+      },
+      "specialties": [
+        "显白美甲",
+        "通勤款",
+        "冰透款",
+        "手型修饰"
+      ],
+      "contentPersona": "像懂款式的美甲师朋友，表达真实直接，擅长案例种草。"
+    },
+    "lin": {
+      "id": "lin",
+      "name": "林夏",
+      "role": "美睫师",
+      "focus": "自然款美睫与眼型调整",
+      "tasks": {
+        "xhs": 2,
+        "douyin": 1,
+        "moments": 1
+      },
+      "done": {
+        "xhs": 2,
+        "douyin": 0,
+        "moments": 1
+      },
+      "specialties": [
+        "自然裸感美睫",
+        "眼型分析",
+        "单根嫁接",
+        "素颜友好"
+      ],
+      "contentPersona": "像专业但温柔的美睫顾问，擅长新手避坑和眼型建议。"
+    },
+    "zhou": {
+      "id": "zhou",
+      "name": "周可",
+      "role": "皮肤管理师",
+      "focus": "清洁补水和午休快变美",
+      "tasks": {
+        "xhs": 1,
+        "douyin": 1,
+        "moments": 1
+      },
+      "done": {
+        "xhs": 1,
+        "douyin": 1,
+        "moments": 1
+      },
+      "specialties": [
+        "清洁补水",
+        "换季护理",
+        "午休皮肤管理",
+        "敏感期沟通"
+      ],
+      "contentPersona": "像细致的皮肤管理师，表达克制专业，强调周期护理和注意事项。"
+    },
+    "wu": {
+      "id": "wu",
+      "name": "吴晴",
+      "role": "前台运营",
+      "focus": "活动转化与客户见证",
+      "tasks": {
+        "xhs": 1,
+        "douyin": 0,
+        "moments": 2
+      },
+      "done": {
+        "xhs": 0,
+        "douyin": 0,
+        "moments": 1
+      },
+      "specialties": [
+        "活动转化",
+        "客户见证",
+        "朋友圈文案",
+        "到店预约"
+      ],
+      "contentPersona": "像门店运营，擅长把活动说清楚并引导私信预约。"
+    }
+  },
+  "services": {
+    "svc_nail_ice": {
+      "id": "svc_nail_ice",
+      "category": "美甲",
+      "name": "夏日显白冰透美甲套餐",
+      "price": "新客 168 元",
+      "duration": "约 90 分钟",
+      "suitableFor": [
+        "上班族",
+        "第一次做美甲的新客",
+        "喜欢干净显白款式的顾客"
+      ],
+      "sellingPoints": [
+        "按肤色选色",
+        "冰透显白",
+        "通勤不夸张",
+        "含基础手部护理"
+      ],
+      "cautions": [
+        "延长甲和复杂款需另约时间",
+        "指甲受损严重建议先做护理"
+      ],
+      "shootingAngles": [
+        "手部自然光近景",
+        "甲面细节微距",
+        "操作过程",
+        "完成后拿杯子或包包的生活场景"
+      ],
+      "caseNotes": "重点展示显白、干净、日常高级，不要只拍夸张款式。",
+      "contraindications": [
+        "延长甲和复杂款需另约时间",
+        "指甲受损严重建议先做护理"
+      ],
+      "aftercare": [
+        "避免暴力抠甲",
+        "做家务建议戴手套",
+        "按时回店卸甲或护理"
+      ],
+      "upsellSuggestions": [
+        "搭配手部护理",
+        "搭配自然美睫",
+        "节日款式预约"
+      ],
+      "materialKeywords": [
+        "美甲",
+        "按肤色选色",
+        "冰透显白",
+        "通勤不夸张"
+      ]
+    },
+    "svc_lash_natural": {
+      "id": "svc_lash_natural",
+      "category": "美睫",
+      "name": "自然裸感单根美睫",
+      "price": "新客 198 元",
+      "duration": "约 100 分钟",
+      "suitableFor": [
+        "素颜通勤人群",
+        "睫毛稀疏顾客",
+        "想自然放大双眼的顾客"
+      ],
+      "sellingPoints": [
+        "按眼型设计",
+        "自然不厚重",
+        "减少化妆时间",
+        "素颜友好"
+      ],
+      "cautions": [
+        "敏感眼需先沟通",
+        "嫁接后 6 小时内避免碰水",
+        "不建议揉眼"
+      ],
+      "shootingAngles": [
+        "闭眼完成近景",
+        "睁眼自然光对比",
+        "侧面卷翘角度",
+        "员工眼型分析过程"
+      ],
+      "caseNotes": "重点展示自然放大双眼，不做夸张前后对比。",
+      "contraindications": [
+        "敏感眼需先沟通",
+        "嫁接后 6 小时内避免碰水",
+        "不建议揉眼"
+      ],
+      "aftercare": [
+        "6 小时内避免碰水",
+        "避免揉眼",
+        "定期清洁睫毛根部"
+      ],
+      "upsellSuggestions": [
+        "搭配眉眼整理",
+        "搭配皮肤补水护理",
+        "定期补睫提醒"
+      ],
+      "materialKeywords": [
+        "美睫",
+        "按眼型设计",
+        "自然不厚重",
+        "减少化妆时间"
+      ]
+    },
+    "svc_skin_hydrate": {
+      "id": "svc_skin_hydrate",
+      "category": "皮肤管理",
+      "name": "午休清洁补水皮肤管理",
+      "price": "体验价 238 元",
+      "duration": "约 60 分钟",
+      "suitableFor": [
+        "办公室人群",
+        "换季干燥人群",
+        "皮肤状态暗沉的顾客"
+      ],
+      "sellingPoints": [
+        "午休可做",
+        "清洁补水",
+        "提升皮肤水润感",
+        "适合周期护理"
+      ],
+      "cautions": [
+        "敏感期需先沟通",
+        "护理后注意防晒和保湿",
+        "效果因个人皮肤状态不同"
+      ],
+      "shootingAngles": [
+        "护理前沟通",
+        "清洁过程局部",
+        "补水护理过程",
+        "护理后自然光状态"
+      ],
+      "caseNotes": "表达为状态护理，不承诺治疗效果。",
+      "contraindications": [
+        "敏感期需先沟通",
+        "护理后注意防晒和保湿",
+        "效果因个人皮肤状态不同"
+      ],
+      "aftercare": [
+        "护理后注意保湿",
+        "当天避免过度清洁",
+        "注意防晒"
+      ],
+      "upsellSuggestions": [
+        "搭配美甲美睫同日安排",
+        "周期护理卡",
+        "换季修护项目"
+      ],
+      "materialKeywords": [
+        "皮肤管理",
+        "午休可做",
+        "清洁补水",
+        "提升皮肤水润感"
+      ]
+    },
+    "svc_lightmedical_aqua": {
+      "id": "svc_lightmedical_aqua",
+      "category": "轻医美",
+      "name": "轻医美水光管理咨询",
+      "price": "到店面诊后确认",
+      "duration": "以项目方案为准",
+      "suitableFor": [
+        "想改善干燥暗沉的人群",
+        "有抗初老需求的人群",
+        "希望先了解项目的人群"
+      ],
+      "sellingPoints": [
+        "先沟通再定方案",
+        "强调个人状态差异",
+        "专业注意事项说明",
+        "自然改善思路"
+      ],
+      "cautions": [
+        "必须到店专业沟通",
+        "不承诺永久或百分百效果",
+        "特殊肤况和恢复期需如实告知",
+        "发布内容以科普和咨询为主"
+      ],
+      "shootingAngles": [
+        "门店环境",
+        "专业沟通过程",
+        "注意事项卡片",
+        "仪器或护理环境局部"
+      ],
+      "caseNotes": "轻医美内容必须避免治疗、根治、永久、无风险等表达。",
+      "contraindications": [
+        "必须到店专业沟通",
+        "不承诺永久或百分百效果",
+        "特殊肤况和恢复期需如实告知",
+        "发布内容以科普和咨询为主"
+      ],
+      "aftercare": [
+        "遵循到店沟通后的注意事项",
+        "恢复期避免刺激性护理",
+        "效果因个人状态不同"
+      ],
+      "upsellSuggestions": [
+        "面诊咨询",
+        "术后护理建议",
+        "皮肤管理周期搭配"
+      ],
+      "materialKeywords": [
+        "轻医美",
+        "先沟通再定方案",
+        "强调个人状态差异",
+        "专业注意事项说明"
+      ]
+    }
+  },
+  "submissions": [
+    {
+      "id": "sub_001",
+      "employeeId": "chen",
+      "platform": "小红书",
+      "link": "今日显白美甲案例已发布",
+      "time": "09:18",
+      "date": "2026-06-03",
+      "status": "pending"
+    },
+    {
+      "id": "sub_002",
+      "employeeId": "lin",
+      "platform": "朋友圈",
+      "link": "自然款美睫客户反馈",
+      "time": "10:32",
+      "date": "2026-06-03",
+      "status": "approved"
+    },
+    {
+      "id": "sub_003",
+      "employeeId": "zhou",
+      "platform": "抖音",
+      "link": "皮肤管理午休变美脚本",
+      "time": "11:06",
+      "date": "2026-06-03",
+      "status": "approved"
+    }
+  ],
+  "generations": [
+    {
+      "id": "gen_d28cc83d-44d3-471e-9311-8e7a4e33c229",
+      "userId": "boss",
+      "type": "video",
+      "title": "短视频脚本方案",
+      "input": {
+        "contentType": "video",
+        "serviceProfileId": "",
+        "serviceName": "夏日显白冰透美甲套餐",
+        "offer": "新客到店 168 元，含基础护理和款式设计",
+        "goal": "引流到店",
+        "tone": "真实种草",
+        "storeFeature": "带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。"
+      },
+      "blocks": [
+        {
+          "title": "15 秒短视频脚本",
+          "lines": [
+            "0-3 秒：展示素手或素颜状态，字幕：上班族午休也能快速变美",
+            "3-8 秒：拍操作过程和细节，字幕：夏日显白冰透美甲套餐",
+            "8-12 秒：展示完成效果，镜头拉近看质感",
+            "12-15 秒：口播或字幕：新客到店 168 元，含基础护理和款式设计，想预约可以私信"
+          ]
+        },
+        {
+          "title": "拍摄清单",
+          "lines": [
+            "门店门头 1 条",
+            "操作过程 3 条",
+            "完成特写 2 条",
+            "员工微笑沟通 1 条",
+            "客户手部或眼部对比 1 条"
+          ]
+        },
+        {
+          "title": "视频生成提示词",
+          "text": "真实美业门店短视频，展示夏日显白冰透美甲套餐服务流程，干净明亮，镜头稳定，有手部细节、员工操作、完成效果，适合小红书和抖音本地生活引流。"
+        }
+      ],
+      "date": "2026-06-03",
+      "time": "23:35"
+    },
+    {
+      "id": "gen_cd12c791-da04-48b9-ba52-0ab203ebbc39",
+      "userId": "boss",
+      "type": "video",
+      "title": "短视频脚本方案",
+      "input": {
+        "contentType": "video",
+        "serviceProfileId": "",
+        "serviceName": "夏日显白冰透美甲套餐",
+        "offer": "新客到店 168 元，含基础护理和款式设计",
+        "goal": "引流到店",
+        "tone": "真实种草",
+        "storeFeature": "带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。"
+      },
+      "blocks": [
+        {
+          "title": "15 秒短视频脚本",
+          "lines": [
+            "0-3 秒：展示素手或素颜状态，字幕：上班族午休也能快速变美",
+            "3-8 秒：拍操作过程和细节，字幕：夏日显白冰透美甲套餐",
+            "8-12 秒：展示完成效果，镜头拉近看质感",
+            "12-15 秒：口播或字幕：新客到店 168 元，含基础护理和款式设计，想预约可以私信"
+          ]
+        },
+        {
+          "title": "拍摄清单",
+          "lines": [
+            "门店门头 1 条",
+            "操作过程 3 条",
+            "完成特写 2 条",
+            "员工微笑沟通 1 条",
+            "客户手部或眼部对比 1 条"
+          ]
+        },
+        {
+          "title": "视频生成提示词",
+          "text": "真实美业门店短视频，展示夏日显白冰透美甲套餐服务流程，干净明亮，镜头稳定，有手部细节、员工操作、完成效果，适合小红书和抖音本地生活引流。"
+        }
+      ],
+      "date": "2026-06-03",
+      "time": "23:35"
+    },
+    {
+      "id": "gen_959ca732-6e81-4019-b38b-861e809fa5f8",
+      "userId": "boss",
+      "type": "video",
+      "title": "短视频脚本方案",
+      "input": {
+        "contentType": "video",
+        "serviceProfileId": "",
+        "serviceName": "夏日显白冰透美甲套餐",
+        "offer": "新客到店 168 元，含基础护理和款式设计",
+        "goal": "引流到店",
+        "tone": "真实种草",
+        "storeFeature": "带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。"
+      },
+      "blocks": [
+        {
+          "title": "15 秒短视频脚本",
+          "lines": [
+            "0-3 秒：展示素手或素颜状态，字幕：上班族午休也能快速变美",
+            "3-8 秒：拍操作过程和细节，字幕：夏日显白冰透美甲套餐",
+            "8-12 秒：展示完成效果，镜头拉近看质感",
+            "12-15 秒：口播或字幕：新客到店 168 元，含基础护理和款式设计，想预约可以私信"
+          ]
+        },
+        {
+          "title": "拍摄清单",
+          "lines": [
+            "门店门头 1 条",
+            "操作过程 3 条",
+            "完成特写 2 条",
+            "员工微笑沟通 1 条",
+            "客户手部或眼部对比 1 条"
+          ]
+        },
+        {
+          "title": "视频生成提示词",
+          "text": "真实美业门店短视频，展示夏日显白冰透美甲套餐服务流程，干净明亮，镜头稳定，有手部细节、员工操作、完成效果，适合小红书和抖音本地生活引流。"
+        }
+      ],
+      "date": "2026-06-03",
+      "time": "23:34"
+    },
+    {
+      "id": "gen_f60cee1b-ee8e-41c6-817f-08d75e7aa0b9",
+      "userId": "boss",
+      "type": "xhs",
+      "title": "小红书图文方案",
+      "input": {
+        "contentType": "xhs",
+        "serviceProfileId": "",
+        "serviceName": "夏日显白冰透美甲套餐",
+        "offer": "新客到店 168 元，含基础护理和款式设计",
+        "goal": "引流到店",
+        "tone": "真实种草",
+        "storeFeature": "带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。"
+      },
+      "blocks": [
+        {
+          "title": "标题备选",
+          "lines": [
+            "做完这个夏日显白冰透美甲套餐，手真的会显干净",
+            "新客 168 元 也能做出高级感，附近姐妹可以冲",
+            "午休来一趟，把美甲和皮肤状态一起安排了"
+          ]
+        },
+        {
+          "title": "正文",
+          "text": "最近店里被问最多的就是「想显白、想干净、又不想太夸张」的款式。这个夏日显白冰透美甲套餐会更适合日常上班、约会和拍照，颜色不会压手，细节近看也很精致。\n\n这次活动是新客到店 168 元，含基础护理和款式设计。我们门店的优势是带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。。如果你是第一次做，直接跟店员说想要自然显白，我们会按手型、肤色和通勤习惯给你搭配。\n\n适合人群：想换风格、手部容易显暗、平时没时间反复跑店的姐妹。"
+        },
+        {
+          "title": "标签",
+          "lines": [
+            "#美甲显白",
+            "#美甲美睫同店",
+            "#轻医美皮肤管理",
+            "#本地探店",
+            "#新客活动",
+            "#上班族变美"
+          ]
+        },
+        {
+          "title": "封面建议",
+          "text": "用近景手部成片做主图，角落放价格和项目名。文字控制在 8 个字以内：显白冰透感。不要把优惠信息堆满封面。"
+        }
+      ],
+      "date": "2026-06-03",
+      "time": "23:34"
+    }
+  ],
+  "assets": {
+    "asset_nail_001": {
+      "id": "asset_nail_001",
+      "serviceId": "svc_nail_ice",
+      "employeeId": "chen",
+      "type": "case_image",
+      "title": "冰透显白美甲近景",
+      "url": "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=900&q=80",
+      "tags": [
+        "显白",
+        "冰透",
+        "通勤",
+        "手部近景"
+      ],
+      "usageNotes": "适合小红书封面，突出甲面通透和手部干净感。",
+      "complianceNotes": "不要写保证显白，表达为视觉显干净。"
+    },
+    "asset_lash_001": {
+      "id": "asset_lash_001",
+      "serviceId": "svc_lash_natural",
+      "employeeId": "lin",
+      "type": "case_image",
+      "title": "自然裸感美睫眼型案例",
+      "url": "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80",
+      "tags": [
+        "自然款",
+        "眼型分析",
+        "素颜友好"
+      ],
+      "usageNotes": "适合讲新手第一次做美睫，强调自然不厚重。",
+      "complianceNotes": "避免夸张前后对比，重点讲适配眼型。"
+    },
+    "asset_skin_001": {
+      "id": "asset_skin_001",
+      "serviceId": "svc_skin_hydrate",
+      "employeeId": "zhou",
+      "type": "case_image",
+      "title": "皮肤管理补水护理过程",
+      "url": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=900&q=80",
+      "tags": [
+        "补水",
+        "护理过程",
+        "午休可做"
+      ],
+      "usageNotes": "适合短视频分镜，展示护理过程和舒适环境。",
+      "complianceNotes": "表达状态护理，不承诺治疗效果。"
+    },
+    "asset_lightmedical_001": {
+      "id": "asset_lightmedical_001",
+      "serviceId": "svc_lightmedical_aqua",
+      "employeeId": "zhou",
+      "type": "education_card",
+      "title": "轻医美水光咨询注意事项卡片",
+      "url": "",
+      "tags": [
+        "轻医美",
+        "注意事项",
+        "面诊沟通"
+      ],
+      "usageNotes": "适合做科普图文，不展示夸张对比。",
+      "complianceNotes": "必须强调到店沟通、个人差异和注意事项。"
+    }
+  }
+}

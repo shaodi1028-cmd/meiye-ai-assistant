@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>美业 AI 运营助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <section id="loginScreen" class="login-screen">
+      <div class="login-panel">
+        <div class="brand large">
+          <div class="brand-mark">美</div>
+          <div>
+            <strong>美业 AI 运营助手</strong>
+            <span>门店自媒体工作台</span>
+          </div>
+        </div>
+        <div>
+          <p class="eyebrow">演示登录</p>
+          <h1>选择一个账号进入</h1>
+        </div>
+        <div class="login-grid">
+          <button class="login-card" data-login="boss">
+            <strong>许老板</strong>
+            <span>查看全店 KPI、下达任务、管理员工</span>
+          </button>
+          <button class="login-card" data-login="chen">
+            <strong>陈妍 · 美甲师</strong>
+            <span>生成内容、提交自己的发布记录</span>
+          </button>
+          <button class="login-card" data-login="lin">
+            <strong>林夏 · 美睫师</strong>
+            <span>只看自己的今日任务和 KPI</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div id="appShell" class="app-shell hidden">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">美</div>
+          <div>
+            <strong>美业 AI 运营助手</strong>
+            <span>门店自媒体工作台</span>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="主导航">
+          <button class="nav-item active" data-view="dashboard" data-title="今日工作台">
+            <span class="icon">⌂</span>
+            <span>今日工作台</span>
+          </button>
+          <button class="nav-item" data-view="creator" data-title="AI 内容生成">
+            <span class="icon">✎</span>
+            <span>AI 内容生成</span>
+          </button>
+          <button class="nav-item" data-view="tasks" data-title="任务与 KPI">
+            <span class="icon">✓</span>
+            <span>任务与 KPI</span>
+          </button>
+          <button class="nav-item boss-only" data-view="reviews" data-title="内容审核">
+            <span class="icon">◎</span>
+            <span>内容审核</span>
+          </button>
+          <button class="nav-item boss-only" data-view="team" data-title="员工管理">
+            <span class="icon">▦</span>
+            <span>员工管理</span>
+          </button>
+          <button class="nav-item boss-only" data-view="services" data-title="项目素材库">
+            <span class="icon">◇</span>
+            <span>项目素材库</span>
+          </button>
+          <button class="nav-item boss-only" data-view="assets" data-title="内容素材库">
+            <span class="icon">▧</span>
+            <span>内容素材库</span>
+          </button>
+          <button class="nav-item boss-only" data-view="providers" data-title="AI 接入配置">
+            <span class="icon">⚙</span>
+            <span>AI 接入配置</span>
+          </button>
+          <button class="nav-item boss-only" data-view="billing" data-title="订阅与额度">
+            <span class="icon">¥</span>
+            <span>订阅与额度</span>
+          </button>
+        </nav>
+
+        <div class="store-card">
+          <span class="label">当前门店</span>
+          <strong id="storeName">栖光美甲美睫 · 轻医美</strong>
+          <span id="storeMeta">老板账号 + 4 名员工</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">MVP 运营版本</p>
+            <h1 id="pageTitle">今日工作台</h1>
+          </div>
+          <div class="top-actions">
+            <div id="userBadge" class="user-badge">未登录</div>
+            <select id="employeeSelect" class="select-field" aria-label="选择员工">
+              <option value="chen">陈妍 · 美甲师</option>
+              <option value="lin">林夏 · 美睫师</option>
+              <option value="zhou">周可 · 皮肤管理师</option>
+              <option value="wu">吴晴 · 前台运营</option>
+            </select>
+            <button id="logoutButton" class="secondary-button">退出</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="view active">
+          <div class="metric-grid">
+            <article class="metric">
+              <span>今日应发</span>
+              <strong id="todayTarget">12</strong>
+              <small>小红书 / 抖音 / 朋友圈</small>
+            </article>
+            <article class="metric">
+              <span>今日已完成</span>
+              <strong id="todayDone">7</strong>
+              <small id="todayRate">完成率 58%</small>
+            </article>
+            <article class="metric">
+              <span>本周内容生成</span>
+              <strong id="generationUsed">86</strong>
+              <small id="generationQuota">本月额度 500 次</small>
+            </article>
+            <article class="metric">
+              <span>待老板审核</span>
+              <strong id="pendingReview">5</strong>
+              <small>员工提交的发布链接</small>
+            </article>
+          </div>
+
+          <div class="work-grid">
+            <section class="panel compact-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">快速开始</p>
+                  <h2>生成门店内容</h2>
+                </div>
+              </div>
+              <div class="quick-actions">
+                <button class="quick-card" data-create="xhs">
+                  <span class="quick-icon">文</span>
+                  <strong>小红书图文</strong>
+                  <small>标题、正文、标签、封面建议</small>
+                </button>
+                <button class="quick-card" data-create="image">
+                  <span class="quick-icon">图</span>
+                  <strong>图片方案</strong>
+                  <small>海报文案、图片提示词、版式</small>
+                </button>
+                <button class="quick-card" data-create="video">
+                  <span class="quick-icon">视</span>
+                  <strong>短视频脚本</strong>
+                  <small>口播、分镜、拍摄清单</small>
+                </button>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">员工进度</p>
+                  <h2>今日 KPI</h2>
+                </div>
+                <button class="text-button" data-view-jump="tasks">查看全部</button>
+              </div>
+              <div id="staffProgress" class="staff-progress"></div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">今日发布队列</p>
+                <h2>待完成任务</h2>
+              </div>
+            </div>
+            <div id="dashboardTasks" class="task-list"></div>
+          </section>
+        </section>
+
+        <section id="creator" class="view">
+          <div class="creator-layout">
+            <form id="creatorForm" class="panel creator-form">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">AI 内容生成</p>
+                  <h2>输入门店信息</h2>
+                </div>
+              </div>
+
+              <label>
+                <span>内容类型</span>
+                <select id="contentType" class="input-field">
+                  <option value="xhs">小红书图文</option>
+                  <option value="copy">通用自媒体文案</option>
+                  <option value="image">图片生成方案</option>
+                  <option value="video">短视频脚本</option>
+                </select>
+              </label>
+
+              <label>
+                <span>门店项目素材</span>
+                <select id="serviceProfile" class="input-field"></select>
+              </label>
+
+              <div id="serviceProfilePreview" class="service-preview"></div>
+
+              <label>
+                <span>推广项目</span>
+                <input id="serviceName" class="input-field" value="夏日显白冰透美甲套餐" />
+              </label>
+
+              <label>
+                <span>活动信息</span>
+                <input id="offer" class="input-field" value="新客到店 168 元，含基础护理和款式设计" />
+              </label>
+
+              <label>
+                <span>内容目标</span>
+                <select id="goal" class="input-field">
+                  <option value="引流到店">引流到店</option>
+                  <option value="展示案例">展示案例</option>
+                  <option value="老客复购">老客复购</option>
+                  <option value="节日活动">节日活动</option>
+                  <option value="员工个人 IP">员工个人 IP</option>
+                </select>
+              </label>
+
+              <label>
+                <span>语气风格</span>
+                <select id="tone" class="input-field">
+                  <option value="真实种草">真实种草</option>
+                  <option value="专业可信">专业可信</option>
+                  <option value="闺蜜聊天">闺蜜聊天</option>
+                  <option value="高端轻奢">高端轻奢</option>
+                </select>
+              </label>
+
+              <label>
+                <span>门店特色</span>
+                <textarea id="storeFeature" class="input-field" rows="4">带轻医美项目，适合上班族午休快速变美；美甲、美睫、皮肤管理可以一次安排。</textarea>
+              </label>
+
+              <button class="primary-button" type="submit">
+                <span>生成内容</span>
+              </button>
+            </form>
+
+            <section class="panel result-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">生成结果</p>
+                  <h2 id="resultTitle">小红书图文方案</h2>
+                </div>
+                <div class="result-actions">
+                  <button id="copyResult" class="icon-button" title="复制结果">⧉</button>
+                  <button id="saveDraft" class="icon-button" title="保存草稿">＋</button>
+                </div>
+              </div>
+              <div id="resultOutput" class="result-output"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="tasks" class="view">
+          <div class="split-layout">
+            <section class="panel boss-only">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">老板设置</p>
+                  <h2>下达本周任务</h2>
+                </div>
+              </div>
+              <form id="taskForm" class="task-form">
+                <label>
+                  <span>员工</span>
+                  <select id="taskEmployee" class="input-field">
+                    <option value="chen">陈妍 · 美甲师</option>
+                    <option value="lin">林夏 · 美睫师</option>
+                    <option value="zhou">周可 · 皮肤管理师</option>
+                    <option value="wu">吴晴 · 前台运营</option>
+                  </select>
+                </label>
+                <div class="task-number-grid">
+                  <label>
+                    <span>小红书/天</span>
+                    <input id="xhsTarget" class="input-field" type="number" min="0" value="2" />
+                  </label>
+                  <label>
+                    <span>抖音/天</span>
+                    <input id="douyinTarget" class="input-field" type="number" min="0" value="1" />
+                  </label>
+                  <label>
+                    <span>朋友圈/天</span>
+                    <input id="momentsTarget" class="input-field" type="number" min="0" value="1" />
+                  </label>
+                </div>
+                <button class="primary-button" type="submit">保存任务</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">员工提交</p>
+                  <h2>发布链接回填</h2>
+                </div>
+              </div>
+              <form id="submitForm" class="submit-form">
+                <label>
+                  <span>平台</span>
+                  <select id="submitPlatform" class="input-field">
+                    <option value="小红书">小红书</option>
+                    <option value="抖音">抖音</option>
+                    <option value="朋友圈">朋友圈</option>
+                  </select>
+                </label>
+                <label>
+                  <span>发布链接或截图说明</span>
+                  <input id="submitLink" class="input-field" placeholder="粘贴链接，或填写已发截图编号" />
+                </label>
+                <button class="primary-button" type="submit">提交完成</button>
+              </form>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">KPI 统计</p>
+                <h2>本周员工完成情况</h2>
+              </div>
+            </div>
+            <div id="kpiTable" class="kpi-table"></div>
+          </section>
+        </section>
+
+        <section id="team" class="view">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">老板账号</p>
+                <h2>员工账号管理</h2>
+              </div>
+              <button id="addEmployee" class="primary-button small">新增员工</button>
+            </div>
+            <div id="teamList" class="team-list"></div>
+          </section>
+        </section>
+
+        <section id="reviews" class="view">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">老板审核</p>
+                <h2>员工发布提交</h2>
+              </div>
+            </div>
+            <div id="reviewList" class="review-list"></div>
+          </section>
+        </section>
+
+        <section id="services" class="view">
+          <div class="services-layout">
+            <form id="serviceForm" class="panel service-form">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">门店素材</p>
+                  <h2 id="serviceFormTitle">新增项目</h2>
+                </div>
+                <button id="newServiceButton" class="secondary-button" type="button">清空</button>
+              </div>
+              <input id="editingServiceId" type="hidden" />
+              <div class="form-grid">
+                <label>
+                  <span>项目分类</span>
+                  <select id="serviceCategory" class="input-field">
+                    <option value="美甲">美甲</option>
+                    <option value="美睫">美睫</option>
+                    <option value="皮肤管理">皮肤管理</option>
+                    <option value="轻医美">轻医美</option>
+                  </select>
+                </label>
+                <label>
+                  <span>项目名称</span>
+                  <input id="serviceEditorName" class="input-field" placeholder="例如：自然裸感单根美睫" />
+                </label>
+                <label>
+                  <span>价格/活动</span>
+                  <input id="servicePrice" class="input-field" placeholder="例如：新客 198 元" />
+                </label>
+                <label>
+                  <span>服务时长</span>
+                  <input id="serviceDuration" class="input-field" placeholder="例如：约 100 分钟" />
+                </label>
+              </div>
+              <label>
+                <span>适合人群</span>
+                <textarea id="serviceSuitableFor" class="input-field" rows="3" placeholder="一行一个，或用逗号分隔"></textarea>
+              </label>
+              <label>
+                <span>核心卖点</span>
+                <textarea id="serviceSellingPoints" class="input-field" rows="3" placeholder="例如：按眼型设计、自然不厚重"></textarea>
+              </label>
+              <label>
+                <span>注意事项/合规提醒</span>
+                <textarea id="serviceCautions" class="input-field" rows="3" placeholder="轻医美项目必须写清楚限制表达"></textarea>
+              </label>
+              <label>
+                <span>禁忌提醒</span>
+                <textarea id="serviceContraindications" class="input-field" rows="3" placeholder="例如：敏感期、恢复期、特殊肤况需先沟通"></textarea>
+              </label>
+              <label>
+                <span>护理后建议</span>
+                <textarea id="serviceAftercare" class="input-field" rows="3" placeholder="例如：注意保湿、防晒、避免揉眼"></textarea>
+              </label>
+              <label>
+                <span>加购/组合建议</span>
+                <textarea id="serviceUpsellSuggestions" class="input-field" rows="3" placeholder="例如：搭配手部护理、周期护理卡"></textarea>
+              </label>
+              <label>
+                <span>素材关键词</span>
+                <textarea id="serviceMaterialKeywords" class="input-field" rows="3" placeholder="用于匹配案例图和生成角度"></textarea>
+              </label>
+              <label>
+                <span>拍摄角度</span>
+                <textarea id="serviceShootingAngles" class="input-field" rows="3" placeholder="例如：完成近景、操作过程、自然光对比"></textarea>
+              </label>
+              <label>
+                <span>案例表达要求</span>
+                <textarea id="serviceCaseNotes" class="input-field" rows="3" placeholder="例如：表达自然改善，不做夸张前后对比"></textarea>
+              </label>
+              <button class="primary-button" type="submit">保存项目素材</button>
+            </form>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">已录入项目</p>
+                  <h2>素材列表</h2>
+                </div>
+              </div>
+              <div id="serviceList" class="service-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="assets" class="view">
+          <div class="services-layout">
+            <form id="assetForm" class="panel service-form">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">案例素材</p>
+                  <h2 id="assetFormTitle">新增素材</h2>
+                </div>
+                <button id="newAssetButton" class="secondary-button" type="button">清空</button>
+              </div>
+              <input id="editingAssetId" type="hidden" />
+              <div class="form-grid">
+                <label>
+                  <span>关联项目</span>
+                  <select id="assetServiceId" class="input-field"></select>
+                </label>
+                <label>
+                  <span>关联员工</span>
+                  <select id="assetEmployeeId" class="input-field"></select>
+                </label>
+                <label>
+                  <span>素材类型</span>
+                  <select id="assetType" class="input-field">
+                    <option value="case_image">案例图</option>
+                    <option value="education_card">科普卡片</option>
+                    <option value="video_clip">视频片段</option>
+                    <option value="customer_feedback">客户反馈</option>
+                  </select>
+                </label>
+                <label>
+                  <span>素材标题</span>
+                  <input id="assetTitle" class="input-field" placeholder="例如：冰透显白美甲近景" />
+                </label>
+              </div>
+              <label>
+                <span>图片/素材链接</span>
+                <input id="assetUrl" class="input-field" placeholder="可以先填图片 URL，后续再接上传" />
+              </label>
+              <label>
+                <span>标签</span>
+                <textarea id="assetTags" class="input-field" rows="3" placeholder="显白、通勤、案例近景"></textarea>
+              </label>
+              <label>
+                <span>使用说明</span>
+                <textarea id="assetUsageNotes" class="input-field" rows="3" placeholder="这张素材适合怎么生成内容"></textarea>
+              </label>
+              <label>
+                <span>合规提醒</span>
+                <textarea id="assetComplianceNotes" class="input-field" rows="3" placeholder="例如：不要写保证效果"></textarea>
+              </label>
+              <button class="primary-button" type="submit">保存内容素材</button>
+            </form>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">素材库</p>
+                  <h2>案例与参考素材</h2>
+                </div>
+              </div>
+              <div id="assetList" class="asset-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section id="billing" class="view">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">订阅计费</p>
+                <h2>套餐与生成额度</h2>
+              </div>
+            </div>
+            <div id="billingSummary" class="billing-summary"></div>
+            <div id="planGrid" class="provider-grid"></div>
+          </section>
+        </section>
+
+        <section id="providers" class="view">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">美业垂直模型中台</p>
+                <h2>专业模型路由与知识包</h2>
+              </div>
+            </div>
+            <div id="verticalModelSummary" class="model-summary"></div>
+            <div id="providerGrid" class="provider-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">专业边界</p>
+                <h2>内容质量与合规规则</h2>
+              </div>
+            </div>
+            <div id="modelRules" class="rules-grid"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>
