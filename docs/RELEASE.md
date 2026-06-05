@@ -20,6 +20,14 @@ cd meiye-ai-assistant
 npm run start
 ```
 
+试用后需要恢复初始演示数据时执行：
+
+```bash
+npm run reset:data
+```
+
+重置前会自动保存一份备份到 `MEIYE_BACKUP_DIR`。
+
 如果部署平台提供持久化磁盘，建议配置：
 
 ```bash

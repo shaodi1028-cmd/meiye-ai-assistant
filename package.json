@@ -7,6 +7,7 @@
     "dev": "node server.js",
     "start": "NODE_ENV=production node server.js",
     "check": "node --check server.js && node --check app.js && node scripts/store-test.js && node scripts/smoke-test.js",
+    "reset:data": "node scripts/reset-demo-data.js",
     "release:package": "sh scripts/package-release.sh"
   }
 }

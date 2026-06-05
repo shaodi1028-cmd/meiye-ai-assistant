@@ -58,6 +58,11 @@ function main() {
   assert.strictEqual(seededStore.health().ready, false);
   assert.strictEqual(seededStore.read().store.name, "种子门店");
   assert.strictEqual(seededStore.health().ready, true);
+  seededStore.write({ ...seedDb, store: { name: "被修改的门店" } });
+  assert.strictEqual(seededStore.read().store.name, "被修改的门店");
+  const resetResult = seededStore.resetFromSeed();
+  assert.strictEqual(seededStore.read().store.name, "种子门店");
+  assert.strictEqual(fs.existsSync(resetResult.backupPath), true);
 
   fs.rmSync(root, { recursive: true, force: true });
   fs.rmSync(seedRoot, { recursive: true, force: true });

@@ -26,6 +26,12 @@ Docker 运行：
 docker compose up --build
 ```
 
+重置演示数据：
+
+```bash
+npm run reset:data
+```
+
 健康检查：
 
 ```text
@@ -71,6 +77,7 @@ docs/DEPLOYMENT.md
 - `MEIYE_BACKUP_DIR` 自定义备份目录
 - `/healthz` 和 `/api/health` 健康检查
 - `npm run start` 生产启动命令
+- `npm run reset:data` 一键恢复演示数据，恢复前自动备份
 - `Dockerfile` 和 `docker-compose.yml` 容器运行入口
 - `lib/json-store.js` 独立数据层，后续可替换为 SQLite 或 PostgreSQL
 
@@ -215,6 +222,8 @@ docs/DEPLOYMENT.md
 当前后端通过 `lib/json-store.js` 访问 JSON 数据库，业务代码只调用读写、导入、导出和备份方法。这样后续替换为正式数据库时，可以优先新增新的 store 实现，减少对业务 API 的影响。
 
 如果 `MEIYE_DB_PATH` 指向的数据库文件不存在，系统会从 `MEIYE_DB_SEED_PATH` 自动复制一份初始数据。这个设计方便 Docker volume 或云平台持久化磁盘首次启动。
+
+试用过程中如果创建了太多测试员工、素材或提交记录，可以执行 `npm run reset:data` 恢复到演示初始数据。系统会先把重置前数据保存到备份目录。
 
 ## 后续可接入
 
