@@ -59,6 +59,39 @@ body {
   gap: 12px;
 }
 
+.auth-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.auth-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+}
+
+.auth-card strong,
+.auth-card span,
+.auth-card label {
+  display: block;
+}
+
+.auth-card > div span,
+.auth-card label {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auth-card label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+
 .login-card {
   min-height: 132px;
   display: grid;
@@ -726,6 +759,20 @@ th {
   color: var(--muted);
 }
 
+.employee-login-result {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.24);
+  border-radius: 8px;
+  background: var(--accent-soft);
+}
+
+.employee-login-result span {
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
 .service-card,
 .review-card,
 .asset-card {
@@ -795,6 +842,25 @@ th {
 
 .billing-summary {
   margin-bottom: 16px;
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.backup-textarea {
+  min-height: 260px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.backup-list {
+  display: grid;
+  gap: 10px;
 }
 
 .billing-card {
@@ -874,6 +940,10 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
   .work-grid,
   .split-layout,
   .services-layout,
@@ -897,6 +967,7 @@ button:disabled {
   .nav-list,
   .metric-grid,
   .quick-actions,
+  .auth-grid,
   .task-number-grid,
   .provider-grid,
   .form-grid,

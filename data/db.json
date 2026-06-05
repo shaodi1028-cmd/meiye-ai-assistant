@@ -47,6 +47,12 @@
       "name": "吴晴",
       "role": "employee",
       "title": "前台运营"
+    },
+    "emp_1780569420040": {
+      "id": "emp_1780569420040",
+      "name": "新员工",
+      "role": "employee",
+      "title": "内容运营"
     }
   },
   "employees": {
@@ -141,6 +147,22 @@
         "到店预约"
       ],
       "contentPersona": "像门店运营，擅长把活动说清楚并引导私信预约。"
+    },
+    "emp_1780569420040": {
+      "id": "emp_1780569420040",
+      "name": "新员工",
+      "role": "内容运营",
+      "focus": "门店活动和客户反馈",
+      "tasks": {
+        "xhs": 1,
+        "douyin": 1,
+        "moments": 1
+      },
+      "done": {
+        "xhs": 0,
+        "douyin": 0,
+        "moments": 0
+      }
     }
   },
   "services": {
