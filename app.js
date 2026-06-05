@@ -31,6 +31,14 @@ function bindElements() {
   Object.assign(els, {
     loginScreen: document.querySelector("#loginScreen"),
     appShell: document.querySelector("#appShell"),
+    accountLoginForm: document.querySelector("#accountLoginForm"),
+    loginPhone: document.querySelector("#loginPhone"),
+    loginPassword: document.querySelector("#loginPassword"),
+    registerForm: document.querySelector("#registerForm"),
+    registerStoreName: document.querySelector("#registerStoreName"),
+    registerBossName: document.querySelector("#registerBossName"),
+    registerPhone: document.querySelector("#registerPhone"),
+    registerPassword: document.querySelector("#registerPassword"),
     pageTitle: document.querySelector("#pageTitle"),
     userBadge: document.querySelector("#userBadge"),
     logoutButton: document.querySelector("#logoutButton"),
@@ -98,25 +106,49 @@ function bindElements() {
     assetList: document.querySelector("#assetList"),
     billingSummary: document.querySelector("#billingSummary"),
     planGrid: document.querySelector("#planGrid"),
+    exportBackupButton: document.querySelector("#exportBackupButton"),
+    copyBackupButton: document.querySelector("#copyBackupButton"),
+    importBackupButton: document.querySelector("#importBackupButton"),
+    refreshBackupsButton: document.querySelector("#refreshBackupsButton"),
+    backupOutput: document.querySelector("#backupOutput"),
+    backupInput: document.querySelector("#backupInput"),
+    backupList: document.querySelector("#backupList"),
     verticalModelSummary: document.querySelector("#verticalModelSummary"),
     providerGrid: document.querySelector("#providerGrid"),
     modelRules: document.querySelector("#modelRules"),
-    addEmployee: document.querySelector("#addEmployee"),
+    employeeForm: document.querySelector("#employeeForm"),
+    employeeName: document.querySelector("#employeeName"),
+    employeeRole: document.querySelector("#employeeRole"),
+    employeeFocus: document.querySelector("#employeeFocus"),
+    employeePhone: document.querySelector("#employeePhone"),
+    employeePassword: document.querySelector("#employeePassword"),
+    employeeLoginResult: document.querySelector("#employeeLoginResult"),
     toast: document.querySelector("#toast"),
   });
 }
 
 function bindEvents() {
+  els.accountLoginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await loginWithAccount();
+  });
+
+  els.registerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await registerBossAccount();
+  });
+
   document.querySelectorAll("[data-login]").forEach((button) => {
     button.addEventListener("click", () => login(button.dataset.login));
   });
 
   els.logoutButton.addEventListener("click", () => {
     localStorage.removeItem("meiye-user-id");
+    localStorage.removeItem("meiye-session-token");
     state.user = null;
     els.loginScreen.classList.remove("hidden");
     els.appShell.classList.add("hidden");
-    showToast("已退出演示账号");
+    showToast("已退出账号");
   });
 
   els.navItems.forEach((item) => {
@@ -221,17 +253,22 @@ function bindEvents() {
     showToast("已提交，今日 KPI 已保存");
   });
 
-  els.addEmployee.addEventListener("click", async () => {
+  els.employeeForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
     const data = await api("/api/employees", {
       method: "POST",
       body: {
-        name: "新员工",
-        role: "内容运营",
-        focus: "门店活动和客户反馈",
+        name: els.employeeName.value,
+        role: els.employeeRole.value,
+        focus: els.employeeFocus.value,
+        phone: els.employeePhone.value,
+        password: els.employeePassword.value,
       },
     });
     applyServerState(data);
-    showToast("已新增一个演示员工账号");
+    renderEmployeeLoginResult(data.employeeLogin);
+    resetEmployeeForm();
+    showToast(data.employeeLogin ? `已新增员工，可用 ${data.employeeLogin.phone} 登录` : "已新增员工档案");
   });
 
   els.newServiceButton.addEventListener("click", () => {
@@ -268,12 +305,68 @@ function bindEvents() {
     resetAssetForm();
     showToast("内容素材已保存");
   });
+
+  els.exportBackupButton.addEventListener("click", exportBackup);
+  els.copyBackupButton.addEventListener("click", copyBackup);
+  els.importBackupButton.addEventListener("click", importBackup);
+  els.refreshBackupsButton.addEventListener("click", loadBackups);
 }
 
 async function restoreSession() {
+  const savedToken = localStorage.getItem("meiye-session-token");
+  if (savedToken) {
+    try {
+      const data = await api("/api/auth/session");
+      state.user = data.user;
+      applyServerState(data.state);
+      els.loginScreen.classList.add("hidden");
+      els.appShell.classList.remove("hidden");
+      showView("dashboard");
+      await loadVerticalModels();
+      return;
+    } catch {
+      localStorage.removeItem("meiye-session-token");
+    }
+  }
   const savedUserId = localStorage.getItem("meiye-user-id");
   if (savedUserId) {
     await login(savedUserId, { quiet: true });
+  }
+}
+
+async function loginWithAccount() {
+  try {
+    const data = await api("/api/auth/login", {
+      method: "POST",
+      body: {
+        phone: els.loginPhone.value,
+        password: els.loginPassword.value,
+      },
+      skipAuth: true,
+    });
+    await enterAppWithAuth(data);
+    showToast(`${data.user.name} 已登录`);
+  } catch (error) {
+    showToast(error.message || "登录失败");
+  }
+}
+
+async function registerBossAccount() {
+  try {
+    const data = await api("/api/auth/register", {
+      method: "POST",
+      body: {
+        storeName: els.registerStoreName.value,
+        name: els.registerBossName.value,
+        phone: els.registerPhone.value,
+        password: els.registerPassword.value,
+      },
+      skipAuth: true,
+    });
+    await enterAppWithAuth(data);
+    showToast("老板账号已创建");
+  } catch (error) {
+    showToast(error.message || "创建账号失败");
   }
 }
 
@@ -285,6 +378,7 @@ async function login(userId, options = {}) {
       skipAuth: true,
     });
     state.user = data.user;
+    localStorage.removeItem("meiye-session-token");
     localStorage.setItem("meiye-user-id", data.user.id);
     applyServerState(data.state);
     els.loginScreen.classList.add("hidden");
@@ -295,6 +389,17 @@ async function login(userId, options = {}) {
   } catch (error) {
     showToast(error.message || "登录失败");
   }
+}
+
+async function enterAppWithAuth(data) {
+  state.user = data.user;
+  localStorage.removeItem("meiye-user-id");
+  localStorage.setItem("meiye-session-token", data.token);
+  applyServerState(data.state);
+  els.loginScreen.classList.add("hidden");
+  els.appShell.classList.remove("hidden");
+  showView("dashboard");
+  await loadVerticalModels();
 }
 
 function applyServerState(data) {
@@ -355,7 +460,7 @@ function renderRole() {
   document.querySelectorAll(".boss-only").forEach((node) => {
     node.classList.toggle("hidden", state.user.role !== "boss");
   });
-  if (state.user.role !== "boss" && ["reviews", "team", "services", "assets", "providers", "billing"].includes(getActiveView())) {
+  if (state.user.role !== "boss" && ["reviews", "team", "services", "assets", "providers", "billing", "data"].includes(getActiveView())) {
     showView("dashboard");
   }
 }
@@ -555,6 +660,29 @@ function renderTeam() {
   });
 }
 
+function resetEmployeeForm() {
+  els.employeeName.value = "";
+  els.employeeRole.value = "";
+  els.employeeFocus.value = "";
+  els.employeePhone.value = "";
+  els.employeePassword.value = "";
+}
+
+function renderEmployeeLoginResult(login) {
+  if (!els.employeeLoginResult) return;
+  if (!login) {
+    els.employeeLoginResult.classList.add("hidden");
+    els.employeeLoginResult.innerHTML = "";
+    return;
+  }
+  els.employeeLoginResult.classList.remove("hidden");
+  els.employeeLoginResult.innerHTML = `
+    <strong>员工登录信息</strong>
+    <span>手机号：${escapeHtml(login.phone)}</span>
+    <span>初始密码：${escapeHtml(login.password)}</span>
+  `;
+}
+
 function renderReviews() {
   if (!els.reviewList) return;
   if (!state.submissions.length) {
@@ -737,6 +865,86 @@ function renderBilling() {
       showToast("订阅方案已切换，额度已刷新");
     });
   });
+}
+
+async function exportBackup() {
+  try {
+    const backup = await api("/api/backups/export");
+    els.backupOutput.value = JSON.stringify(backup, null, 2);
+    await loadBackups();
+    showToast("当前数据已导出");
+  } catch (error) {
+    showToast(error.message || "导出失败");
+  }
+}
+
+async function copyBackup() {
+  const text = els.backupOutput.value.trim();
+  if (!text) {
+    showToast("请先导出备份");
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("备份文本已复制");
+  } catch {
+    showToast("浏览器未开放剪贴板权限，可手动复制");
+  }
+}
+
+async function importBackup() {
+  const raw = els.backupInput.value.trim();
+  if (!raw) {
+    showToast("请先粘贴备份 JSON");
+    return;
+  }
+  if (!window.confirm("导入会覆盖当前数据。系统会先自动保存一份导入前备份，确认继续？")) return;
+  try {
+    const parsed = JSON.parse(raw);
+    const data = await api("/api/backups/import", {
+      method: "POST",
+      body: { backup: parsed },
+    });
+    if (data.token) {
+      localStorage.setItem("meiye-session-token", data.token);
+    }
+    state.user = data.user || state.user;
+    applyServerState(data.state || data);
+    els.backupInput.value = "";
+    await loadBackups();
+    showToast("备份已导入并恢复");
+  } catch (error) {
+    showToast(error.message || "导入失败，请检查 JSON 格式");
+  }
+}
+
+async function loadBackups() {
+  if (!state.user || state.user.role !== "boss") return;
+  try {
+    const data = await api("/api/backups");
+    renderBackups(data.backups || []);
+  } catch {
+    renderBackups([]);
+  }
+}
+
+function renderBackups(backups = []) {
+  if (!els.backupList) return;
+  if (!backups.length) {
+    els.backupList.innerHTML = `<article class="submission-row"><span class="muted">暂无自动备份。修改数据或导入前会自动生成备份。</span></article>`;
+    return;
+  }
+  els.backupList.innerHTML = backups
+    .map((backup) => `
+      <article class="submission-row">
+        <div class="team-row-top">
+          <strong>${escapeHtml(backup.fileName)}</strong>
+          <span class="pill">${Math.ceil(backup.size / 1024)} KB</span>
+        </div>
+        <span class="muted">${escapeHtml(backup.createdAt)}</span>
+      </article>
+    `)
+    .join("");
 }
 
 function readAssetForm() {
@@ -925,8 +1133,13 @@ function renderOutputBlock(block) {
 
 async function api(path, options = {}) {
   const headers = { "Content-Type": "application/json" };
-  if (!options.skipAuth && state.user) {
-    headers["x-user-id"] = state.user.id;
+  if (!options.skipAuth) {
+    const token = localStorage.getItem("meiye-session-token");
+    if (token) {
+      headers["x-session-token"] = token;
+    } else if (state.user) {
+      headers["x-user-id"] = state.user.id;
+    }
   }
   const response = await fetch(path, {
     method: options.method || "GET",
@@ -950,6 +1163,9 @@ function showView(viewId) {
   els.navItems.forEach((item) => item.classList.toggle("active", item.dataset.view === viewId));
   const activeItem = [...els.navItems].find((item) => item.dataset.view === viewId);
   els.pageTitle.textContent = activeItem ? activeItem.dataset.title : "今日工作台";
+  if (viewId === "data") {
+    loadBackups();
+  }
 }
 
 function getActiveView() {

@@ -1,15 +1,24 @@
 const assert = require("assert");
 const {
   applySubscriptionPlan,
+  buildBackupExport,
   buildBillingState,
+  buildHealthState,
   buildState,
   buildVerticalModelInfo,
+  createEmployeeAccount,
+  createPasswordHash,
   generateContent,
   generateContentBlocks,
+  getUserBySessionToken,
+  loginWithPassword,
   normalizeAsset,
   normalizeService,
   normalizeTasks,
   readDb,
+  registerBossAccount,
+  validateImportedDb,
+  verifyPassword,
 } = require("../server");
 
 async function main() {
@@ -85,6 +94,66 @@ async function main() {
   assert.strictEqual(modelInfo.positioning.includes("美甲美睫"), true);
   assert.strictEqual(Object.keys(modelInfo.serviceCategories).includes("lightMedical"), true);
   assert.strictEqual(typeof modelInfo.runtimeProvider.configured, "boolean");
+
+  const health = buildHealthState();
+  assert.strictEqual(health.ok, true);
+  assert.strictEqual(health.service, "meiye-ai-assistant");
+  assert.strictEqual(health.storage.ready, true);
+
+  const passwordHash = createPasswordHash("test123456");
+  assert.strictEqual(verifyPassword("test123456", passwordHash), true);
+  assert.strictEqual(verifyPassword("bad-password", passwordHash), false);
+
+  const authDb = JSON.parse(JSON.stringify(db));
+  const registered = registerBossAccount(authDb, {
+    storeName: "测试美业门店",
+    name: "测试老板",
+    phone: "13800000000",
+    password: "test123456",
+  });
+  assert.strictEqual(registered.user.role, "boss");
+  assert.strictEqual(authDb.store.name, "测试美业门店");
+  assert.strictEqual(typeof registered.token, "string");
+  assert.strictEqual(getUserBySessionToken(authDb, registered.token).id, registered.user.id);
+
+  const loggedIn = loginWithPassword(authDb, {
+    phone: "13800000000",
+    password: "test123456",
+  });
+  assert.strictEqual(loggedIn.user.id, registered.user.id);
+
+  const createdEmployee = createEmployeeAccount(authDb, {
+    name: "测试员工",
+    role: "美甲师",
+    focus: "测试内容方向",
+    phone: "13900000000",
+    password: "emp123456",
+  });
+  assert.strictEqual(createdEmployee.employee.role, "美甲师");
+  assert.deepStrictEqual(createdEmployee.employeeLogin, {
+    phone: "13900000000",
+    password: "emp123456",
+  });
+  const employeeLogin = loginWithPassword(authDb, {
+    phone: "13900000000",
+    password: "emp123456",
+  });
+  assert.strictEqual(employeeLogin.user.role, "employee");
+  assert.throws(() => createEmployeeAccount(authDb, { name: "", phone: "13900000001" }), /员工姓名不能为空/);
+  assert.throws(
+    () => createEmployeeAccount(authDb, { name: "弱密码员工", phone: "13900000001", password: "123" }),
+    /员工初始密码至少需要 6 位/,
+  );
+  assert.throws(
+    () => createEmployeeAccount(authDb, { name: "重复手机号员工", phone: "13900000000", password: "emp123456" }),
+    /这个手机号已经注册过/,
+  );
+
+  const backup = buildBackupExport(authDb);
+  assert.strictEqual(backup.app, "meiye-ai-assistant");
+  assert.deepStrictEqual(backup.data.auth.sessions, {});
+  assert.strictEqual(validateImportedDb(backup).store.name, "测试美业门店");
+  assert.throws(() => validateImportedDb({ bad: true }), /备份缺少/);
 
   const lightMedicalGeneration = await generateContent(
     {

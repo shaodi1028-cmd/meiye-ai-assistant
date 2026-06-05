@@ -5,6 +5,9 @@
   "description": "美业 AI 运营助手本地 MVP",
   "scripts": {
     "dev": "node server.js",
-    "check": "node --check server.js && node --check app.js && node scripts/smoke-test.js"
+    "start": "NODE_ENV=production node server.js",
+    "check": "node --check server.js && node --check app.js && node scripts/store-test.js && node scripts/smoke-test.js",
+    "reset:data": "node scripts/reset-demo-data.js",
+    "release:package": "sh scripts/package-release.sh"
   }
 }

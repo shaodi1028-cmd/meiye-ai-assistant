@@ -1,13 +1,16 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { randomUUID } = require("crypto");
+const { pbkdf2Sync, randomBytes, randomUUID, timingSafeEqual } = require("crypto");
+const { createJsonStore } = require("./lib/json-store");
+
+loadEnvFile();
 
 const PORT = Number(process.env.PORT || 4173);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
 const ROOT = __dirname;
-const DB_PATH = path.join(ROOT, "data", "db.json");
 const DOMAIN_PATH = path.join(ROOT, "data", "models", "beauty-domain.json");
+const dataStore = createJsonStore({ root: ROOT });
 
 const platformNames = {
   xhs: "小红书",
@@ -26,7 +29,8 @@ const mimeTypes = {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host}`);
-    if (url.pathname.startsWith("/api/")) {
+    setBaseHeaders(res);
+    if (url.pathname.startsWith("/api/") || url.pathname === "/healthz") {
       await handleApi(req, res, url);
       return;
     }
@@ -42,11 +46,46 @@ const server = http.createServer(async (req, res) => {
 
 if (require.main === module) {
   server.listen(PORT, HOST, () => {
-    console.log(`美业 AI 运营助手已启动：http://localhost:${PORT}`);
+    const displayHost = HOST === "0.0.0.0" ? "localhost" : HOST;
+    console.log(`美业 AI 运营助手已启动：http://${displayHost}:${PORT}`);
   });
 }
 
 async function handleApi(req, res, url) {
+  if (req.method === "GET" && (url.pathname === "/api/health" || url.pathname === "/healthz")) {
+    sendJson(res, 200, buildHealthState());
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/auth/register") {
+    const body = await readJson(req);
+    const db = readDb();
+    const authResult = registerBossAccount(db, body);
+    writeDb(db);
+    sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(db, authResult.user) });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/auth/login") {
+    const body = await readJson(req);
+    const db = readDb();
+    const authResult = loginWithPassword(db, body);
+    writeDb(db);
+    sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(db, authResult.user) });
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/auth/session") {
+    const db = readDb();
+    const user = getUserFromRequest(req, db);
+    if (!user) {
+      sendJson(res, 401, { error: "UNAUTHORIZED", message: "登录已过期，请重新登录" });
+      return;
+    }
+    sendJson(res, 200, { user, state: buildState(db, user) });
+    return;
+  }
+
   if (req.method === "POST" && url.pathname === "/api/login") {
     const body = await readJson(req);
     const db = readDb();
@@ -88,6 +127,30 @@ async function handleApi(req, res, url) {
 
   if (req.method === "GET" && url.pathname === "/api/billing") {
     sendJson(res, 200, buildBillingState(db));
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/backups/export") {
+    requireBoss(user);
+    sendJson(res, 200, buildBackupExport(db));
+    return;
+  }
+
+  if (req.method === "GET" && url.pathname === "/api/backups") {
+    requireBoss(user);
+    sendJson(res, 200, { backups: dataStore.listBackups() });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/backups/import") {
+    requireBoss(user);
+    const body = await readJson(req);
+    const nextDb = validateImportedDb(body.backup || body);
+    dataStore.createBackup(db, "before-import");
+    const nextUser = nextDb.users[user.id] || Object.values(nextDb.users).find((item) => item.role === "boss") || user;
+    const authResult = issueSession(nextDb, nextUser);
+    writeDb(nextDb);
+    sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(nextDb, authResult.user) });
     return;
   }
 
@@ -294,23 +357,12 @@ async function handleApi(req, res, url) {
   if (req.method === "POST" && url.pathname === "/api/employees") {
     requireBoss(user);
     const body = await readJson(req);
-    const id = `emp_${Date.now()}`;
-    db.users[id] = {
-      id,
-      name: String(body.name || "新员工"),
-      role: "employee",
-      title: String(body.role || "员工"),
-    };
-    db.employees[id] = {
-      id,
-      name: db.users[id].name,
-      role: db.users[id].title,
-      focus: String(body.focus || "门店内容发布"),
-      tasks: { xhs: 1, douyin: 1, moments: 1 },
-      done: { xhs: 0, douyin: 0, moments: 0 },
-    };
+    const { employeeLogin } = createEmployeeAccount(db, body);
     writeDb(db);
-    sendJson(res, 200, buildState(db, user));
+    sendJson(res, 200, {
+      ...buildState(db, user),
+      employeeLogin,
+    });
     return;
   }
 
@@ -335,6 +387,28 @@ function serveStatic(res, requestPath) {
   });
 }
 
+function buildHealthState() {
+  return {
+    ok: true,
+    service: "meiye-ai-assistant",
+    version: process.env.npm_package_version || "0.2.0",
+    environment: process.env.NODE_ENV || "development",
+    storage: {
+      ...dataStore.health(),
+    },
+    modelProvider: getConfiguredProvider()?.name || "local-template",
+    time: new Date().toISOString(),
+  };
+}
+
+function buildBackupExport(db) {
+  return dataStore.buildExport(db);
+}
+
+function validateImportedDb(payload = {}) {
+  return dataStore.validateImport(payload);
+}
+
 function buildState(db, user) {
   const employees = filterEmployeesForUser(db.employees, user);
   return {
@@ -356,6 +430,10 @@ function filterEmployeesForUser(employees, user) {
 }
 
 function getUserFromRequest(req, db) {
+  const token = req.headers["x-session-token"];
+  if (token) {
+    return getUserBySessionToken(db, token);
+  }
   const userId = req.headers["x-user-id"];
   return userId ? db.users[userId] : null;
 }
@@ -370,7 +448,7 @@ function requireBoss(user) {
 }
 
 function readDb() {
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+  return dataStore.read();
 }
 
 function readDomain() {
@@ -378,7 +456,193 @@ function readDomain() {
 }
 
 function writeDb(db) {
-  fs.writeFileSync(DB_PATH, `${JSON.stringify(db, null, 2)}\n`);
+  dataStore.write(db);
+}
+
+function ensureAuth(db) {
+  db.auth = db.auth || { accounts: {}, sessions: {} };
+  db.auth.accounts = db.auth.accounts || {};
+  db.auth.sessions = db.auth.sessions || {};
+  return db.auth;
+}
+
+function registerBossAccount(db, input = {}) {
+  const phone = normalizePhone(input.phone);
+  const password = clean(input.password);
+  const name = clean(input.name) || "门店老板";
+  const storeName = clean(input.storeName) || "我的美业门店";
+  if (!phone || phone.length < 6) {
+    authError("手机号不能为空", "INVALID_PHONE");
+  }
+  if (password.length < 6) {
+    authError("密码至少需要 6 位", "WEAK_PASSWORD");
+  }
+  if (findUserIdByPhone(db, phone)) {
+    authError("这个手机号已经注册过", "PHONE_EXISTS", 409);
+  }
+  const userId = `boss_${Date.now()}`;
+  db.store.name = storeName;
+  db.users[userId] = {
+    id: userId,
+    name,
+    role: "boss",
+    title: "门店老板",
+  };
+  upsertAuthAccount(db, { userId, phone, password, role: "boss" });
+  return issueSession(db, db.users[userId]);
+}
+
+function createEmployeeAccount(db, input = {}) {
+  const id = `emp_${randomUUID().slice(0, 8)}`;
+  const name = clean(input.name);
+  const role = clean(input.role) || "员工";
+  const focus = clean(input.focus) || "门店内容发布";
+  const phone = normalizePhone(input.phone);
+  const password = clean(input.password) || "123456";
+  if (!name) {
+    authError("员工姓名不能为空", "INVALID_EMPLOYEE");
+  }
+  if (phone && password.length < 6) {
+    authError("员工初始密码至少需要 6 位", "WEAK_PASSWORD");
+  }
+  if (phone && findUserIdByPhone(db, phone)) {
+    authError("这个手机号已经注册过", "PHONE_EXISTS", 409);
+  }
+  db.users[id] = {
+    id,
+    name,
+    role: "employee",
+    title: role,
+  };
+  db.employees[id] = {
+    id,
+    name,
+    role,
+    focus,
+    tasks: { xhs: 1, douyin: 1, moments: 1 },
+    done: { xhs: 0, douyin: 0, moments: 0 },
+  };
+  if (phone) {
+    upsertAuthAccount(db, {
+      userId: id,
+      phone,
+      password,
+      role: "employee",
+    });
+  }
+  return {
+    employee: db.employees[id],
+    employeeLogin: phone ? { phone, password } : null,
+  };
+}
+
+function loginWithPassword(db, input = {}) {
+  const phone = normalizePhone(input.phone);
+  const password = clean(input.password);
+  const userId = findUserIdByPhone(db, phone);
+  if (!userId) {
+    authError("手机号或密码不正确", "INVALID_CREDENTIALS", 401);
+  }
+  const account = ensureAuth(db).accounts[userId];
+  if (!account || !verifyPassword(password, account.passwordHash)) {
+    authError("手机号或密码不正确", "INVALID_CREDENTIALS", 401);
+  }
+  const user = db.users[userId];
+  if (!user) {
+    authError("账号不存在", "INVALID_USER", 401);
+  }
+  return issueSession(db, user);
+}
+
+function upsertAuthAccount(db, { userId, phone, password, role }) {
+  ensureAuth(db).accounts[userId] = {
+    userId,
+    phone,
+    role,
+    passwordHash: createPasswordHash(password),
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function issueSession(db, user) {
+  const auth = ensureAuth(db);
+  const token = randomBytes(32).toString("hex");
+  auth.sessions[token] = {
+    token,
+    userId: user.id,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+  };
+  pruneExpiredSessions(db);
+  return { user, token };
+}
+
+function getUserBySessionToken(db, token) {
+  const session = ensureAuth(db).sessions[String(token || "")];
+  if (!session || new Date(session.expiresAt).getTime() < Date.now()) return null;
+  return db.users[session.userId] || null;
+}
+
+function pruneExpiredSessions(db) {
+  const sessions = ensureAuth(db).sessions;
+  Object.keys(sessions).forEach((token) => {
+    if (new Date(sessions[token].expiresAt).getTime() < Date.now()) {
+      delete sessions[token];
+    }
+  });
+}
+
+function findUserIdByPhone(db, phone) {
+  const normalizedPhone = normalizePhone(phone);
+  const accounts = ensureAuth(db).accounts;
+  return Object.values(accounts).find((account) => account.phone === normalizedPhone)?.userId || "";
+}
+
+function createPasswordHash(password) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = pbkdf2Sync(String(password || ""), salt, 120000, 32, "sha256").toString("hex");
+  return `pbkdf2_sha256$120000$${salt}$${hash}`;
+}
+
+function verifyPassword(password, storedHash = "") {
+  const [scheme, rounds, salt, hash] = storedHash.split("$");
+  if (scheme !== "pbkdf2_sha256" || !rounds || !salt || !hash) return false;
+  const candidate = pbkdf2Sync(String(password || ""), salt, Number(rounds), 32, "sha256");
+  const expected = Buffer.from(hash, "hex");
+  return candidate.length === expected.length && timingSafeEqual(candidate, expected);
+}
+
+function normalizePhone(value) {
+  return String(value || "").replace(/[^\d+]/g, "").slice(0, 32);
+}
+
+function authError(message, code, statusCode = 400) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  error.code = code;
+  throw error;
+}
+
+function loadEnvFile() {
+  const envPath = path.join(__dirname, ".env");
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) return;
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex === -1) return;
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    if (!key || process.env[key] !== undefined) return;
+    process.env[key] = rawValue.replace(/^["']|["']$/g, "");
+  });
+}
+
+function setBaseHeaders(res) {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "same-origin");
+  res.setHeader("Cache-Control", process.env.NODE_ENV === "production" ? "no-store" : "no-cache");
 }
 
 function readJson(req) {
@@ -1179,14 +1443,23 @@ function collectUnique(items) {
 
 module.exports = {
   applySubscriptionPlan,
+  buildBackupExport,
   buildBillingState,
+  buildHealthState,
   buildState,
   buildVerticalModelInfo,
+  createEmployeeAccount,
+  createPasswordHash,
   generateContent,
   generateContentBlocks,
+  getUserBySessionToken,
+  loginWithPassword,
   normalizeAsset,
   normalizeService,
   normalizeTasks,
   platformNames,
   readDb,
+  registerBossAccount,
+  validateImportedDb,
+  verifyPassword,
 };
