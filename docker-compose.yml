@@ -1,0 +1,17 @@
+services:
+  meiye-ai-assistant:
+    build: .
+    ports:
+      - "4173:4173"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4173
+      MEIYE_DB_PATH: /data/db.json
+      MEIYE_BACKUP_DIR: /data/backups
+      MEIYE_MAX_BACKUPS: 10
+    volumes:
+      - meiye-data:/data
+
+volumes:
+  meiye-data:

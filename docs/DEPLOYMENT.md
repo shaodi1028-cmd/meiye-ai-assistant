@@ -20,6 +20,22 @@ npm run start
 npm run dev
 ```
 
+## Docker 启动
+
+本地或服务器安装 Docker 后可以直接运行：
+
+```bash
+docker compose up --build
+```
+
+默认访问：
+
+```text
+http://localhost:4173
+```
+
+`docker-compose.yml` 会把 `/data` 挂到持久化 volume，员工账号、发布记录、素材库、生成记录和自动备份都会保留。
+
 ## 环境变量
 
 ```bash
@@ -27,11 +43,14 @@ NODE_ENV=production
 HOST=0.0.0.0
 PORT=4173
 MEIYE_DB_PATH=/data/db.json
+MEIYE_DB_SEED_PATH=/app/data/db.json
 MEIYE_BACKUP_DIR=/data/backups
 MEIYE_MAX_BACKUPS=10
 ```
 
 `MEIYE_DB_PATH` 是当前 JSON 数据库的路径。部署时建议把它放到云平台的持久化磁盘目录，否则服务重启或重新部署后，员工提交、项目素材、生成记录可能丢失。
+
+`MEIYE_DB_SEED_PATH` 是首次启动时复制初始数据的路径。当 `MEIYE_DB_PATH` 不存在时，系统会自动从 seed 文件初始化一份数据库，适合空 Docker volume 或新挂载磁盘。
 
 账号、员工、session、素材库和生成记录当前都保存在这个 JSON 文件里。上线内测时必须保证该路径可写且持久化。
 

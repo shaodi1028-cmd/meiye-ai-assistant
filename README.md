@@ -20,6 +20,12 @@ http://localhost:4173
 npm run start
 ```
 
+Docker 运行：
+
+```bash
+docker compose up --build
+```
+
 健康检查：
 
 ```text
@@ -61,9 +67,11 @@ docs/DEPLOYMENT.md
 - `HOST` / `PORT` 配置
 - `.env` 本地环境变量
 - `MEIYE_DB_PATH` 自定义 JSON 数据库路径
+- `MEIYE_DB_SEED_PATH` 首次启动初始化数据路径
 - `MEIYE_BACKUP_DIR` 自定义备份目录
 - `/healthz` 和 `/api/health` 健康检查
 - `npm run start` 生产启动命令
+- `Dockerfile` 和 `docker-compose.yml` 容器运行入口
 - `lib/json-store.js` 独立数据层，后续可替换为 SQLite 或 PostgreSQL
 
 ## 演示账号
@@ -205,6 +213,8 @@ docs/DEPLOYMENT.md
 ## 数据层
 
 当前后端通过 `lib/json-store.js` 访问 JSON 数据库，业务代码只调用读写、导入、导出和备份方法。这样后续替换为正式数据库时，可以优先新增新的 store 实现，减少对业务 API 的影响。
+
+如果 `MEIYE_DB_PATH` 指向的数据库文件不存在，系统会从 `MEIYE_DB_SEED_PATH` 自动复制一份初始数据。这个设计方便 Docker volume 或云平台持久化磁盘首次启动。
 
 ## 后续可接入
 

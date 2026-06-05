@@ -46,7 +46,21 @@ function main() {
   assert.strictEqual(store.validateImport(exported).store.name, "测试门店");
   assert.throws(() => store.validateImport({ bad: true }), /备份缺少/);
 
+  const seedRoot = fs.mkdtempSync(path.join(os.tmpdir(), "meiye-store-seed-"));
+  const seedDb = { ...firstDb, store: { name: "种子门店" } };
+  fs.writeFileSync(path.join(seedRoot, "seed.json"), `${JSON.stringify(seedDb, null, 2)}\n`);
+  const seededStore = createJsonStore({
+    root: seedRoot,
+    dbPath: "data/db.json",
+    seedPath: "seed.json",
+    backupDir: "backups",
+  });
+  assert.strictEqual(seededStore.health().ready, false);
+  assert.strictEqual(seededStore.read().store.name, "种子门店");
+  assert.strictEqual(seededStore.health().ready, true);
+
   fs.rmSync(root, { recursive: true, force: true });
+  fs.rmSync(seedRoot, { recursive: true, force: true });
   console.log("store test ok");
 }
 
