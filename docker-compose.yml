@@ -3,15 +3,43 @@ services:
     build: .
     ports:
       - "4173:4173"
+    depends_on:
+      mysql:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 4173
+      MEIYE_STORE: mysql
       MEIYE_DB_PATH: /data/db.json
+      MEIYE_DB_SEED_PATH: /app/data/db.json
       MEIYE_BACKUP_DIR: /data/backups
       MEIYE_MAX_BACKUPS: 10
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DATABASE: meiye_ai
+      MYSQL_USER: meiye_user
+      MYSQL_PASSWORD: meiye_password
     volumes:
       - meiye-data:/data
 
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: meiye_ai
+      MYSQL_USER: meiye_user
+      MYSQL_PASSWORD: meiye_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - meiye-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-umeiye_user", "-pmeiye_password"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
 volumes:
   meiye-data:
+  meiye-mysql:

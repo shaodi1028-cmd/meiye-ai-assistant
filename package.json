@@ -6,8 +6,12 @@
   "scripts": {
     "dev": "node server.js",
     "start": "NODE_ENV=production node server.js",
-    "check": "node --check server.js && node --check app.js && node scripts/store-test.js && node scripts/smoke-test.js",
+    "check": "node --check server.js && node --check app.js && node --check lib/mysql-store.js && node --check scripts/import-json-to-mysql.js && node scripts/store-test.js && node scripts/smoke-test.js",
     "reset:data": "node scripts/reset-demo-data.js",
+    "mysql:import": "node scripts/import-json-to-mysql.js",
     "release:package": "sh scripts/package-release.sh"
+  },
+  "dependencies": {
+    "mysql2": "^3.22.4"
   }
 }

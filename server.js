@@ -2,7 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { pbkdf2Sync, randomBytes, randomUUID, timingSafeEqual } = require("crypto");
-const { createJsonStore } = require("./lib/json-store");
+const { createDataStore } = require("./lib/store");
 
 loadEnvFile();
 
@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
 const ROOT = __dirname;
 const DOMAIN_PATH = path.join(ROOT, "data", "models", "beauty-domain.json");
-const dataStore = createJsonStore({ root: ROOT });
+const dataStore = createDataStore({ root: ROOT });
 
 const platformNames = {
   xhs: "小红书",
@@ -53,30 +53,30 @@ if (require.main === module) {
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && (url.pathname === "/api/health" || url.pathname === "/healthz")) {
-    sendJson(res, 200, buildHealthState());
+    sendJson(res, 200, await buildHealthState());
     return;
   }
 
   if (req.method === "POST" && url.pathname === "/api/auth/register") {
     const body = await readJson(req);
-    const db = readDb();
+    const db = await readDb();
     const authResult = registerBossAccount(db, body);
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(db, authResult.user) });
     return;
   }
 
   if (req.method === "POST" && url.pathname === "/api/auth/login") {
     const body = await readJson(req);
-    const db = readDb();
+    const db = await readDb();
     const authResult = loginWithPassword(db, body);
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(db, authResult.user) });
     return;
   }
 
   if (req.method === "GET" && url.pathname === "/api/auth/session") {
-    const db = readDb();
+    const db = await readDb();
     const user = getUserFromRequest(req, db);
     if (!user) {
       sendJson(res, 401, { error: "UNAUTHORIZED", message: "登录已过期，请重新登录" });
@@ -88,7 +88,7 @@ async function handleApi(req, res, url) {
 
   if (req.method === "POST" && url.pathname === "/api/login") {
     const body = await readJson(req);
-    const db = readDb();
+    const db = await readDb();
     const user = db.users[body.userId];
     if (!user) {
       sendJson(res, 401, { error: "INVALID_USER", message: "账号不存在" });
@@ -98,7 +98,7 @@ async function handleApi(req, res, url) {
     return;
   }
 
-  const db = readDb();
+  const db = await readDb();
   const user = getUserFromRequest(req, db);
   if (!user) {
     sendJson(res, 401, { error: "UNAUTHORIZED", message: "请先登录" });
@@ -138,7 +138,7 @@ async function handleApi(req, res, url) {
 
   if (req.method === "GET" && url.pathname === "/api/backups") {
     requireBoss(user);
-    sendJson(res, 200, { backups: dataStore.listBackups() });
+    sendJson(res, 200, { backups: await dataStore.listBackups() });
     return;
   }
 
@@ -146,10 +146,10 @@ async function handleApi(req, res, url) {
     requireBoss(user);
     const body = await readJson(req);
     const nextDb = validateImportedDb(body.backup || body);
-    dataStore.createBackup(db, "before-import");
+    await dataStore.createBackup(db, "before-import");
     const nextUser = nextDb.users[user.id] || Object.values(nextDb.users).find((item) => item.role === "boss") || user;
     const authResult = issueSession(nextDb, nextUser);
-    writeDb(nextDb);
+    await writeDb(nextDb);
     sendJson(res, 200, { user: authResult.user, token: authResult.token, state: buildState(nextDb, authResult.user) });
     return;
   }
@@ -158,7 +158,7 @@ async function handleApi(req, res, url) {
     requireBoss(user);
     const body = await readJson(req);
     applySubscriptionPlan(db, body.planId);
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -170,7 +170,7 @@ async function handleApi(req, res, url) {
     service.id = `svc_${Date.now()}`;
     db.services = db.services || {};
     db.services[service.id] = service;
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -185,7 +185,7 @@ async function handleApi(req, res, url) {
     }
     const body = await readJson(req);
     db.services[serviceId] = { ...normalizeService(body), id: serviceId };
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -198,7 +198,7 @@ async function handleApi(req, res, url) {
       return;
     }
     delete db.services[serviceId];
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -210,7 +210,7 @@ async function handleApi(req, res, url) {
     asset.id = `asset_${Date.now()}`;
     db.assets = db.assets || {};
     db.assets[asset.id] = asset;
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -225,7 +225,7 @@ async function handleApi(req, res, url) {
     }
     const body = await readJson(req);
     db.assets[assetId] = { ...normalizeAsset(body, db), id: assetId };
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -238,7 +238,7 @@ async function handleApi(req, res, url) {
       return;
     }
     delete db.assets[assetId];
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -253,7 +253,7 @@ async function handleApi(req, res, url) {
     }
     employee.tasks = normalizeTasks(body.tasks);
     clampDone(employee);
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -283,7 +283,7 @@ async function handleApi(req, res, url) {
       time: nowTime(),
       status: "pending",
     });
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -307,7 +307,7 @@ async function handleApi(req, res, url) {
     submission.reviewNote = clean(body.reviewNote);
     submission.reviewedAt = `${today()} ${nowTime()}`;
     submission.reviewedBy = user.id;
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, buildState(db, user));
     return;
   }
@@ -343,7 +343,7 @@ async function handleApi(req, res, url) {
       time: nowTime(),
     });
     db.store.generationUsed += 1;
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, {
       title: generation.title,
       blocks: generation.blocks,
@@ -358,7 +358,7 @@ async function handleApi(req, res, url) {
     requireBoss(user);
     const body = await readJson(req);
     const { employeeLogin } = createEmployeeAccount(db, body);
-    writeDb(db);
+    await writeDb(db);
     sendJson(res, 200, {
       ...buildState(db, user),
       employeeLogin,
@@ -387,14 +387,14 @@ function serveStatic(res, requestPath) {
   });
 }
 
-function buildHealthState() {
+async function buildHealthState() {
   return {
     ok: true,
     service: "meiye-ai-assistant",
     version: process.env.npm_package_version || "0.2.0",
     environment: process.env.NODE_ENV || "development",
     storage: {
-      ...dataStore.health(),
+      ...(await dataStore.health()),
     },
     modelProvider: getConfiguredProvider()?.name || "local-template",
     time: new Date().toISOString(),
@@ -456,7 +456,7 @@ function readDomain() {
 }
 
 function writeDb(db) {
-  dataStore.write(db);
+  return dataStore.write(db);
 }
 
 function ensureAuth(db) {

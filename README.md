@@ -1,6 +1,6 @@
 # 美业 AI 运营助手
 
-面向带轻医美服务的美甲美睫门店老板和员工的 AI 自媒体运营工作台。当前版本已经从静态原型升级为本地 Web 应用，包含 Node 后端和 JSON 本地数据存储。
+面向带轻医美服务的美甲美睫门店老板和员工的 AI 自媒体运营工作台。当前版本已经从静态原型升级为本地 Web 应用，包含 Node 后端，并支持 JSON 本地存储与 MySQL 数据层。
 
 ## 运行方式
 
@@ -24,6 +24,12 @@ Docker 运行：
 
 ```bash
 docker compose up --build
+```
+
+本地 MySQL 导入演示数据：
+
+```bash
+MEIYE_STORE=mysql npm run mysql:import
 ```
 
 重置演示数据：
@@ -72,14 +78,17 @@ docs/DEPLOYMENT.md
 
 - `HOST` / `PORT` 配置
 - `.env` 本地环境变量
+- `MEIYE_STORE=json/mysql` 数据层切换
 - `MEIYE_DB_PATH` 自定义 JSON 数据库路径
 - `MEIYE_DB_SEED_PATH` 首次启动初始化数据路径
 - `MEIYE_BACKUP_DIR` 自定义备份目录
+- `MYSQL_HOST` / `MYSQL_DATABASE` / `MYSQL_USER` / `MYSQL_PASSWORD` MySQL 连接配置
 - `/healthz` 和 `/api/health` 健康检查
 - `npm run start` 生产启动命令
 - `npm run reset:data` 一键恢复演示数据，恢复前自动备份
+- `npm run mysql:import` 把 JSON 演示数据导入 MySQL
 - `Dockerfile` 和 `docker-compose.yml` 容器运行入口
-- `lib/json-store.js` 独立数据层，后续可替换为 SQLite 或 PostgreSQL
+- `lib/store.js` 数据层工厂，当前支持 JSON 和 MySQL
 
 ## 演示账号
 
@@ -109,6 +118,7 @@ docs/DEPLOYMENT.md
 - 本地登录和角色权限
 - 后端 API
 - JSON 数据持久化
+- MySQL 数据层与备份表
 - 内容生成记录和生成额度统计
 - 美业垂直模型知识包
 - 按美甲、美睫、皮肤管理、轻医美识别项目场景

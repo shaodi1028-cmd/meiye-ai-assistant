@@ -9,7 +9,9 @@ ENV MEIYE_DB_PATH=/data/db.json
 ENV MEIYE_DB_SEED_PATH=/app/data/db.json
 ENV MEIYE_BACKUP_DIR=/data/backups
 
-COPY package.json ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
 COPY . .
 
 RUN mkdir -p /data/backups \

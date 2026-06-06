@@ -22,7 +22,7 @@ const {
 } = require("../server");
 
 async function main() {
-  const db = readDb();
+  const db = await readDb();
 
   const bossState = buildState(db, db.users.boss);
   assert.strictEqual(Object.keys(bossState.employees).length >= 4, true);
@@ -95,7 +95,7 @@ async function main() {
   assert.strictEqual(Object.keys(modelInfo.serviceCategories).includes("lightMedical"), true);
   assert.strictEqual(typeof modelInfo.runtimeProvider.configured, "boolean");
 
-  const health = buildHealthState();
+  const health = await buildHealthState();
   assert.strictEqual(health.ok, true);
   assert.strictEqual(health.service, "meiye-ai-assistant");
   assert.strictEqual(health.storage.ready, true);
@@ -105,10 +105,13 @@ async function main() {
   assert.strictEqual(verifyPassword("bad-password", passwordHash), false);
 
   const authDb = JSON.parse(JSON.stringify(db));
+  const uniqueSuffix = String(Date.now()).slice(-8);
+  const bossPhone = `138${uniqueSuffix}`;
+  const employeePhone = `139${uniqueSuffix}`;
   const registered = registerBossAccount(authDb, {
     storeName: "测试美业门店",
     name: "测试老板",
-    phone: "13800000000",
+    phone: bossPhone,
     password: "test123456",
   });
   assert.strictEqual(registered.user.role, "boss");
@@ -117,7 +120,7 @@ async function main() {
   assert.strictEqual(getUserBySessionToken(authDb, registered.token).id, registered.user.id);
 
   const loggedIn = loginWithPassword(authDb, {
-    phone: "13800000000",
+    phone: bossPhone,
     password: "test123456",
   });
   assert.strictEqual(loggedIn.user.id, registered.user.id);
@@ -126,16 +129,16 @@ async function main() {
     name: "测试员工",
     role: "美甲师",
     focus: "测试内容方向",
-    phone: "13900000000",
+    phone: employeePhone,
     password: "emp123456",
   });
   assert.strictEqual(createdEmployee.employee.role, "美甲师");
   assert.deepStrictEqual(createdEmployee.employeeLogin, {
-    phone: "13900000000",
+    phone: employeePhone,
     password: "emp123456",
   });
   const employeeLogin = loginWithPassword(authDb, {
-    phone: "13900000000",
+    phone: employeePhone,
     password: "emp123456",
   });
   assert.strictEqual(employeeLogin.user.role, "employee");
@@ -145,7 +148,7 @@ async function main() {
     /员工初始密码至少需要 6 位/,
   );
   assert.throws(
-    () => createEmployeeAccount(authDb, { name: "重复手机号员工", phone: "13900000000", password: "emp123456" }),
+    () => createEmployeeAccount(authDb, { name: "重复手机号员工", phone: employeePhone, password: "emp123456" }),
     /这个手机号已经注册过/,
   );
 
