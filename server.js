@@ -859,8 +859,8 @@ function resultTitle(contentType) {
   return {
     xhs: "小红书图文方案",
     copy: "通用自媒体文案",
-    image: "图片生成方案",
-    video: "短视频脚本方案",
+    image: "图片提示词/海报方案",
+    video: "短视频脚本/分镜方案",
   }[contentType] || "内容方案";
 }
 
@@ -1244,7 +1244,7 @@ async function tryGenerateWithExternalModel(context) {
 
   const prompt = buildExternalPrompt(context);
   try {
-    const text = await callExternalProvider(provider, prompt);
+    const text = await callExternalProvider(provider, prompt, context);
     const blocks = parseModelBlocks(text);
     if (!blocks.length) return context.localBlocks;
     return [
@@ -1258,7 +1258,7 @@ async function tryGenerateWithExternalModel(context) {
     if (provider.fallbackModel && provider.fallbackModel !== provider.model) {
       try {
         const fallbackProvider = { ...provider, model: provider.fallbackModel };
-        const text = await callExternalProvider(fallbackProvider, prompt);
+        const text = await callExternalProvider(fallbackProvider, prompt, context);
         const blocks = parseModelBlocks(text);
         if (blocks.length) {
           return [
@@ -1329,13 +1329,14 @@ function getConfiguredProvider() {
   return null;
 }
 
-async function callExternalProvider(provider, prompt) {
+async function callExternalProvider(provider, prompt, context = {}) {
+  const systemMessage = buildExternalSystemMessage(context.input?.contentType);
   if (provider.name === "Gemini") {
     const response = await fetch(`${provider.endpoint}?key=${provider.apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        contents: [{ role: "user", parts: [{ text: `${systemMessage}\n\n${prompt}` }] }],
         generationConfig: { temperature: 0.7, responseMimeType: "application/json" },
       }),
     });
@@ -1358,7 +1359,7 @@ async function callExternalProvider(provider, prompt) {
     body: JSON.stringify({
       model: provider.model,
       messages: [
-        { role: "system", content: "你是美甲、美睫、皮肤管理、轻医美门店的专业自媒体运营模型。" },
+        { role: "system", content: systemMessage },
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
@@ -1369,11 +1370,26 @@ async function callExternalProvider(provider, prompt) {
   return data.choices?.[0]?.message?.content || "";
 }
 
+function buildExternalSystemMessage(contentType) {
+  const base = "你是美甲、美睫、皮肤管理、轻医美门店的专业自媒体运营模型。必须严格按用户给定 contentType 生产内容。";
+  if (contentType === "image") {
+    return `${base} 本次任务是图片生产方案：输出给文生图模型、设计师或门店员工使用的图片提示词、海报文案、版式建议和负面提示词。禁止输出普通朋友圈正文、小红书正文或视频脚本。`;
+  }
+  if (contentType === "video") {
+    return `${base} 本次任务是短视频脚本和分镜方案：输出镜头脚本、拍摄清单、字幕口播和视频生成提示词。禁止输出普通朋友圈正文、小红书正文或单张图片海报方案。`;
+  }
+  if (contentType === "copy") {
+    return `${base} 本次任务是通用自媒体文案：输出朋友圈文案、抖音口播和发布建议。禁止输出图片提示词或视频分镜。`;
+  }
+  return `${base} 本次任务是小红书图文方案：输出标题、正文、标签和封面建议。禁止输出视频分镜或单纯图片提示词。`;
+}
+
 function buildExternalPrompt({ input, data, domain, modelMeta, variation }) {
   const payload = {
     task: "生成美甲美睫轻医美门店自媒体内容",
     outputFormat: "只输出 JSON 数组，每项包含 title 和 text 或 lines 字段，不要输出 Markdown。",
     contentType: input.contentType,
+    contentTypeRequirements: buildContentTypeRequirements(input.contentType),
     platform: modelMeta.platformName,
     modelType: modelMeta.modelType,
     domainVersion: modelMeta.domainVersion,
@@ -1410,6 +1426,53 @@ function buildExternalPrompt({ input, data, domain, modelMeta, variation }) {
     requiredChecks: domain.qualityChecklist,
   };
   return JSON.stringify(payload, null, 2);
+}
+
+function buildContentTypeRequirements(contentType) {
+  if (contentType === "image") {
+    return {
+      purpose: "生成可交给图片模型或设计师执行的美业图片方案，不是普通营销文案。",
+      mustReturnBlocks: ["图片生成提示词", "海报文案", "版式建议", "负面提示词"],
+      constraints: [
+        "图片生成提示词必须描述画面主体、构图、光线、门店环境、顾客状态、服务细节和风格。",
+        "海报文案必须短，适合放在图片上，不要写成长段正文。",
+        "版式建议必须说明主视觉、文字层级、价格位置、二维码或预约入口位置。",
+        "负面提示词必须包含不夸张、不医疗承诺、不过度磨皮、不虚假前后对比。",
+      ],
+    };
+  }
+  if (contentType === "video") {
+    return {
+      purpose: "生成可用于拍摄或视频模型生成的短视频脚本和分镜，不是普通营销文案。",
+      mustReturnBlocks: ["15 秒短视频脚本", "分镜表", "拍摄清单", "视频生成提示词"],
+      constraints: [
+        "脚本必须按秒数拆分，覆盖开头钩子、过程细节、完成效果和到店转化。",
+        "分镜表必须包含镜头、画面、字幕或口播、拍摄重点。",
+        "拍摄清单必须让员工拿手机就知道拍什么。",
+        "视频生成提示词必须描述真实门店短视频画面，不要只写广告文案。",
+      ],
+    };
+  }
+  if (contentType === "copy") {
+    return {
+      purpose: "生成可直接发布的通用自媒体文案。",
+      mustReturnBlocks: ["朋友圈文案", "抖音口播", "发布建议"],
+      constraints: [
+        "朋友圈文案要自然可信，适合老板或员工直接复制。",
+        "抖音口播要口语化，适合真人出镜。",
+        "发布建议要包含平台、时间、封面或素材使用建议。",
+      ],
+    };
+  }
+  return {
+    purpose: "生成小红书图文发布方案。",
+    mustReturnBlocks: ["标题备选", "正文", "标签", "封面建议"],
+    constraints: [
+      "标题要像真实本地生活账号，不做夸张承诺。",
+      "正文要有场景、人群、项目卖点和到店转化。",
+      "标签要适合美业、本地生活和项目关键词。",
+    ],
+  };
 }
 
 function parseModelBlocks(text) {
