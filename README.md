@@ -46,7 +46,19 @@ http://localhost:4173/healthz
 
 ## 真实模型测试
 
-系统支持三种真实模型适配器，任选一种配置环境变量即可。都不配置时，会自动使用本地美业垂直模板。
+系统支持多种真实模型适配器，任选一种配置环境变量即可。都不配置时，会自动使用本地美业垂直模板。国内内测建议优先使用阿里云百炼。
+
+```bash
+BAILIAN_API_KEY=你的_key npm run dev
+```
+
+默认配置：
+
+```text
+BAILIAN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+BAILIAN_MODEL=deepseek-v4-flash
+BAILIAN_FALLBACK_MODEL=qwen-plus
+```
 
 ```bash
 OPENROUTER_API_KEY=你的_key npm run dev
@@ -130,6 +142,7 @@ docs/DEPLOYMENT.md
 - 员工擅长风格和内容人格
 - 门店内容素材库：案例图、科普卡片、客户反馈、视频片段
 - 订阅套餐和生成额度扣减
+- 阿里云百炼 DeepSeek/Qwen 真实文案模型适配器
 - OpenRouter、Gemini、Groq 真实模型适配器
 - 老板端数据备份导出、备份导入恢复、自动写入备份
 

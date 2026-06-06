@@ -1255,6 +1255,29 @@ async function tryGenerateWithExternalModel(context) {
       ...blocks,
     ];
   } catch (error) {
+    if (provider.fallbackModel && provider.fallbackModel !== provider.model) {
+      try {
+        const fallbackProvider = { ...provider, model: provider.fallbackModel };
+        const text = await callExternalProvider(fallbackProvider, prompt);
+        const blocks = parseModelBlocks(text);
+        if (blocks.length) {
+          return [
+            {
+              title: "真实模型生成来源",
+              lines: [
+                `服务商：${fallbackProvider.name}`,
+                `模型：${fallbackProvider.model}`,
+                `主模型回退原因：${error.message}`,
+                "垂直知识包：已注入美甲美睫轻医美规则",
+              ],
+            },
+            ...blocks,
+          ];
+        }
+      } catch (fallbackError) {
+        error = new Error(`${error.message}；备用模型也失败：${fallbackError.message}`);
+      }
+    }
     return [
       {
         title: "真实模型调用状态",
@@ -1266,6 +1289,19 @@ async function tryGenerateWithExternalModel(context) {
 }
 
 function getConfiguredProvider() {
+  if (process.env.BAILIAN_API_KEY || process.env.DASHSCOPE_API_KEY) {
+    const baseUrl = (process.env.BAILIAN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1").replace(
+      /\/+$/,
+      "",
+    );
+    return {
+      name: "阿里云百炼",
+      model: process.env.BAILIAN_MODEL || "deepseek-v4-flash",
+      fallbackModel: process.env.BAILIAN_FALLBACK_MODEL || "qwen-plus",
+      endpoint: `${baseUrl}/chat/completions`,
+      apiKey: process.env.BAILIAN_API_KEY || process.env.DASHSCOPE_API_KEY,
+    };
+  }
   if (process.env.OPENROUTER_API_KEY) {
     return {
       name: "OpenRouter",

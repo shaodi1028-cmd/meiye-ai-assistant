@@ -107,7 +107,18 @@ db/mysql-schema.sql
 
 ## AI 模型配置
 
-任选一个即可：
+任选一个即可。国内真实门店内测建议优先使用阿里云百炼：
+
+```bash
+BAILIAN_API_KEY=
+BAILIAN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+BAILIAN_MODEL=deepseek-v4-flash
+BAILIAN_FALLBACK_MODEL=qwen-plus
+```
+
+系统会先调用 `BAILIAN_MODEL`，如果失败并配置了 `BAILIAN_FALLBACK_MODEL`，会自动尝试备用模型。备用也失败时，回退到本地美业垂直模板，避免员工当天完全无法生成内容。
+
+其他可选模型：
 
 ```bash
 OPENROUTER_API_KEY=

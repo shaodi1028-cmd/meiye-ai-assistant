@@ -89,7 +89,7 @@
     "copy": {
       "modelType": "beauty-copywriter",
       "domain": "美业自媒体文案",
-      "futureProviders": ["通用大语言模型 + 美业知识包", "美业案例库微调模型"]
+      "futureProviders": ["阿里云百炼 DeepSeek V4 Flash", "阿里云百炼 Qwen Plus 备用", "美业案例库微调模型"]
     },
     "image": {
       "modelType": "beauty-image-prompt",
