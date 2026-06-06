@@ -20,6 +20,10 @@ services:
       MYSQL_DATABASE: meiye_ai
       MYSQL_USER: meiye_user
       MYSQL_PASSWORD: meiye_password
+      BAILIAN_API_KEY: ${BAILIAN_API_KEY:-}
+      BAILIAN_BASE_URL: ${BAILIAN_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      BAILIAN_MODEL: ${BAILIAN_MODEL:-deepseek-v4-flash}
+      BAILIAN_FALLBACK_MODEL: ${BAILIAN_FALLBACK_MODEL:-qwen-plus}
     volumes:
       - meiye-data:/data
 
